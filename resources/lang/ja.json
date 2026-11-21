@@ -34,6 +34,7 @@
     "GPU.Power": "GPU電力",
     "GPU.Fan": "GPUファン",
     "MEM.Load": "メモリ使用",
+    "MEM.Percent": "メモリ使用率",
     "FPS": "FPS",
     "MOBO.Temp": "マザボ温度",
     "CASE.Fan": "ケースファン",
@@ -68,6 +69,7 @@
     "GPU.Power": "GPWR",
     "GPU.Fan": "GFAN",
     "MEM.Load": "MEM",
+    "MEM.Percent": "MEM%",
     "FPS": "FPS",
     "MOBO.Temp": "マザボ",
     "CASE.Fan": "ケース",
@@ -80,6 +82,11 @@
     "DATA.DayDown": "⏬"
   },
   "Menu": {
+    "PanelFont": "パネルのフォント",
+    "PanelFontBold": "文字の太さ",
+    "FollowTheme": "テーマに従う",
+    "BoldRegular": "標準",
+    "BoldBold": "太字",
     "__Comment_Global__": "--- Global ---",
     "SettingsPanel": "設定パネル",
     "About": "アプリについて",

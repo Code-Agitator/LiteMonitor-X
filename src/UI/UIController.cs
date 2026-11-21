@@ -59,7 +59,7 @@ namespace LiteMonitor
             }
         }
 
-        public void ApplyTheme(string name, bool retainData = false)
+        public void ApplyTheme(string name, bool retainData = false, bool applyUserFonts = true)
         {
             // 1. 先保留旧主题的引用 (为了稍后释放)
             var oldTheme = ThemeManager.Current;
@@ -81,12 +81,16 @@ namespace LiteMonitor
                 oldTheme.DisposeFonts();
             }
 
+            // 5. 应用设置层的主面板字体覆盖
+            // 必须在 Scale 之前：Scale 会依据 Font 配置重建字体对象
+            if (applyUserFonts) ApplyPanelFontSettings(t);
+
             // ... 后续缩放逻辑保持不变 ...
             float dpiScale = GetCurrentDpiScale();   
             float userScale = (float)_cfg.UIScale;    
             float finalScale = dpiScale * userScale;
 
-            t.Scale(dpiScale, userScale); // Scale 内部现在会自动清理旧缩放字体
+            t.Scale(dpiScale, userScale);
 
             // ... 边距修复逻辑 ...
             if (!_cfg.HorizontalMode)
@@ -120,6 +124,33 @@ namespace LiteMonitor
             _timer.Interval = Math.Max(80, _cfg.RefreshMs);
             _form.Invalidate();
             _form.Update();
+        }
+
+        /// <summary>
+        /// 把"设置"里的主面板字体覆盖写入主题配置。
+        /// 三项的默认值（空字体族 / 缩放 1.0 / 字重 -1）都表示"跟随主题"，此时不做任何修改。
+        /// </summary>
+        private void ApplyPanelFontSettings(Theme t)
+        {
+            if (t?.Font == null) return;
+
+            // 字体族：同时覆盖文本族与数值族
+            // （数值列已使用固定步进绘制，换成比例字体也不会出现数字抖动）
+            if (!string.IsNullOrWhiteSpace(_cfg.PanelFontFamily))
+            {
+                t.Font.Family = _cfg.PanelFontFamily;
+                t.Font.ValueFamily = _cfg.PanelFontFamily;
+            }
+
+            // 字重：分层字重统一覆盖
+            if (_cfg.PanelFontBold >= 0)
+            {
+                bool bold = _cfg.PanelFontBold == 1;
+                t.Font.TitleBold = bold;
+                t.Font.GroupBold = bold;
+                t.Font.ItemBold = bold;
+                t.Font.ValueBold = bold;
+            }
         }
 
         public void RebuildLayout()

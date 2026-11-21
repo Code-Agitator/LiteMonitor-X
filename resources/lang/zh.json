@@ -29,6 +29,7 @@
     "GPU.Power": "GPU功耗",
     "GPU.Fan": "GPU风扇",
     "MEM.Load": "内存占用",
+    "MEM.Percent": "内存百分比",
     "FPS": "实时帧率",
     "MOBO.Temp": "主板温度",
     "CASE.Fan": "机箱风扇",
@@ -63,6 +64,7 @@
     "GPU.Power": "GPWR",
     "GPU.Fan": "GFAN",
     "MEM.Load": "内存",
+    "MEM.Percent": "内存%",
     "FPS": "FPS",
     "MOBO.Temp": "主板",
     "CASE.Fan": "机箱",
@@ -79,6 +81,11 @@
     "BAT.Current": "🔋"
   },
   "Menu": {
+    "PanelFont": "主面板字体",
+    "PanelFontBold": "字体加粗",
+    "FollowTheme": "跟随主题",
+    "BoldRegular": "常规",
+    "BoldBold": "加粗",
     "__Comment_Global__": "--- 全局/按钮/右键菜单 ---",
     "SettingsPanel": "设置面板",
     "About": "关于 LiteMonitor",

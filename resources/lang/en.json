@@ -33,6 +33,7 @@
     "GPU.Power": "GPU Pwr",
     "GPU.Fan": "GPU Fan",
     "MEM.Load": "RAM Usage",
+    "MEM.Percent": "RAM Usage %",
     "FPS": "FPS",
     "MOBO.Temp": "MOBO Temp",
     "CASE.Fan": "Case Fan",
@@ -63,6 +64,7 @@
     "GPU.Power": "GPWR",
     "GPU.Fan": "GFAN",
     "MEM.Load": "RAM",
+    "MEM.Percent": "RAM%",
     "FPS": "FPS",
     "MOBO.Temp": "MOBO",
     "CASE.Fan": "Case",
@@ -79,6 +81,11 @@
     "BAT.Current": "BCUR"
   },
   "Menu": {
+    "PanelFont": "Panel Font",
+    "PanelFontBold": "Font Weight",
+    "FollowTheme": "Follow theme",
+    "BoldRegular": "Regular",
+    "BoldBold": "Bold",
     "__Comment_Global__": "--- Global ---",
     "SettingsPanel": "Settings",
     "About": "About",

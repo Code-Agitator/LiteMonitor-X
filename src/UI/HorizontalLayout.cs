@@ -56,7 +56,7 @@ namespace LiteMonitor
             
             var s = _settings.GetStyle();
             int pad = _padding;
-            int padV = _padding / 2;
+            int padV = UIUtils.Grid4(_padding / 2f);   // 间距对齐 4px 栅格
             bool isTaskbarSingle = (_mode == LayoutMode.Taskbar && _settings.TaskbarSingleLine);
             bool isHorizontalSingle = (_mode == LayoutMode.Horizontal && _settings.HorizontalSingleLine);
 

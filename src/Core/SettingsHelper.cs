@@ -183,11 +183,14 @@ namespace LiteMonitor
                 new MonitorItemConfig { Key = "GPU.VRAM",  SortIndex = 306, VisibleInPanel = true },
 
                 // [4xx] HOST (MEM, FPS, MOBO, DISK Temp, CASE Fan)
-                new MonitorItemConfig { Key = "MEM.Load",  SortIndex = 401, VisibleInPanel = true, VisibleInTaskbar = true },
-                new MonitorItemConfig { Key = "FPS",       SortIndex = 402, VisibleInPanel = false },
-                new MonitorItemConfig { Key = "MOBO.Temp", SortIndex = 403, VisibleInPanel = false },
-                new MonitorItemConfig { Key = "DISK.Temp", SortIndex = 404, VisibleInPanel = false },
-                new MonitorItemConfig { Key = "CASE.Fan",  SortIndex = 405, VisibleInPanel = false },
+                new MonitorItemConfig { Key = "MEM.Load",    SortIndex = 401, VisibleInPanel = true, VisibleInTaskbar = true },
+                // [New] 内存百分比：始终按百分比显示，不受「内存显示模式(容量/百分比)」影响
+                // 锚点紧跟 MEM.Load，老用户升级时会由 CheckAndAppendMissingItems 自动插到内存占用之后
+                new MonitorItemConfig { Key = "MEM.Percent", SortIndex = 402, VisibleInPanel = true },
+                new MonitorItemConfig { Key = "FPS",         SortIndex = 403, VisibleInPanel = false },
+                new MonitorItemConfig { Key = "MOBO.Temp",   SortIndex = 404, VisibleInPanel = false },
+                new MonitorItemConfig { Key = "DISK.Temp",   SortIndex = 405, VisibleInPanel = false },
+                new MonitorItemConfig { Key = "CASE.Fan",    SortIndex = 406, VisibleInPanel = false },
                 
                 // [5xx] BATTERY (New Group)
                 new MonitorItemConfig { Key = "BAT.Percent", SortIndex = 501, VisibleInPanel = false, VisibleInTaskbar = false },

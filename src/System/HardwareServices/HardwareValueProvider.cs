@@ -235,7 +235,7 @@ namespace LiteMonitor.src.SystemServices
                 return _perfManager.GetCpuFreq();
             }
 
-            if (key == "MEM.Load")
+            if (key == "MEM.Load" || key == "MEM.Percent")
             {
                 var memData = _perfManager.GetMemoryData();
                 if (memData.Load.HasValue && Settings.DetectedRamTotalGB <= 0 && _perfManager.TotalMemoryGB > 0.1f)
@@ -335,8 +335,9 @@ namespace LiteMonitor.src.SystemServices
                         result = TrafficLogger.GetTodayStats().down;
                         break;
 
-                    // 6. 内存
+                    // 6. 内存（MEM.Percent 与 MEM.Load 同源，仅渲染口径不同）
                     case "MEM.Load":
+                    case "MEM.Percent":
                         if (useCounter)
                         {
                             var memData = _perfManager.GetMemoryData();

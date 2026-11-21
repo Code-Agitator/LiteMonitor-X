@@ -13,17 +13,17 @@ namespace LiteMonitor
         // 字体缓存 - 直接初始化，避免每次渲染都创建字体
         private static Font? _cachedFont = null;
 
-        // 浅色主题
+        // 浅色主题 —— WinUI 3 SystemFillColor*（Light）
         private static readonly Color LABEL_LIGHT = Color.FromArgb(20, 20, 20);
-        private static readonly Color SAFE_LIGHT = Color.FromArgb(0x00, 0x80, 0x40);
-        private static readonly Color WARN_LIGHT = Color.FromArgb(0xB5, 0x75, 0x00);
-        private static readonly Color CRIT_LIGHT = Color.FromArgb(0xC0, 0x30, 0x30);
+        private static readonly Color SAFE_LIGHT = Color.FromArgb(0x0F, 0x7B, 0x0F);
+        private static readonly Color WARN_LIGHT = Color.FromArgb(0x9D, 0x5D, 0x00);
+        private static readonly Color CRIT_LIGHT = Color.FromArgb(0xC4, 0x2B, 0x1C);
 
-        // 深色主题
+        // 深色主题 —— WinUI 3 SystemFillColor*（Dark）
         private static readonly Color LABEL_DARK = Color.White;
-        private static readonly Color SAFE_DARK = Color.FromArgb(0x66, 0xFF, 0x99);
-        private static readonly Color WARN_DARK = Color.FromArgb(0xFF, 0xD6, 0x66);
-        private static readonly Color CRIT_DARK = Color.FromArgb(0xFF, 0x66, 0x66);
+        private static readonly Color SAFE_DARK = Color.FromArgb(0x6C, 0xCB, 0x5F);
+        private static readonly Color WARN_DARK = Color.FromArgb(0xFC, 0xE1, 0x00);
+        private static readonly Color CRIT_DARK = Color.FromArgb(0xFF, 0x99, 0xA4);
 
         // ★★★ [新增] 自定义颜色缓存 ★★★
         private static bool _useCustom = false;
@@ -153,14 +153,8 @@ namespace LiteMonitor
                 TextFormatFlags.NoClipping
             );
 
-            // Value 右对齐
-            TextRenderer.DrawText(
-                g, value, font, rc, valueColor,
-                TextFormatFlags.Right |
-                TextFormatFlags.VerticalCenter |
-                TextFormatFlags.NoPadding |
-                TextFormatFlags.NoClipping
-            );
+            // Value 右对齐 —— 等宽数字，避免刷新时抖动
+            UIUtils.DrawTabularRight(g, value, font, rc, valueColor);
         }
         // [新增] 辅助：根据状态快速获取颜色 (替代原来的 PickColor)
         private static Color GetStateColor(int state, bool light)

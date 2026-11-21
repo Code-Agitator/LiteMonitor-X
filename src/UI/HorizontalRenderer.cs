@@ -15,12 +15,29 @@ namespace LiteMonitor
         public static void Render(Graphics g, Theme t, List<Column> cols, int panelWidth)
         {
             int panelHeight = (int)g.VisibleClipBounds.Height;
+            var full = new Rectangle(0, 0, panelWidth, panelHeight);
 
-            using (var bg = new SolidBrush(ThemeManager.ParseColor(t.Color.Background)))
-                g.FillRectangle(bg, new Rectangle(0, 0, panelWidth, panelHeight));
+            // 横条模式此前未设置抗锯齿，圆角与文字边缘会出现锯齿
+            var oldSmoothing = g.SmoothingMode;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            foreach (var col in cols)
-                DrawColumn(g, col, t);
+            try
+            {
+                using (var bg = new SolidBrush(ThemeManager.ParseColor(t.Color.Background)))
+                    g.FillRectangle(bg, full);
+
+                // Windows 11 描边：窗口本身即卡片（外圆角由 DWM 提供），这里补 1px 描边与顶部高光线
+                UIUtils.DrawCardOutline(g, full, t.Layout.CornerRadius,
+                    ThemeManager.ParseColor(t.Color.CardStroke),
+                    ThemeManager.ParseColor(t.Color.CardHighlight));
+
+                foreach (var col in cols)
+                    DrawColumn(g, col, t);
+            }
+            finally
+            {
+                g.SmoothingMode = oldSmoothing;
+            }
         }
 
         private static void DrawColumn(Graphics g, Column col, Theme t)
@@ -83,16 +100,8 @@ namespace LiteMonitor
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding
             );
 
-            // Value (右对齐)
-            // ★★★ 修复：统一使用 Item 字体 (即标签字体)，与任务栏保持一致 ★★★
-            TextRenderer.DrawText(
-                g,
-                value,
-                t.FontValue,
-                rc,
-                valColor,
-                TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding
-            );
+            // Value (右对齐) —— 等宽数字，避免刷新时抖动
+            UIUtils.DrawTabularRight(g, value, t.FontValue, rc, valColor);
         }
     }
 }

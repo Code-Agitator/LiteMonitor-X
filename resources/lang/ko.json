@@ -33,6 +33,7 @@
     "GPU.Power": "GPU 전력",
     "GPU.Fan": "GPU 팬",
     "MEM.Load": "메모리 사용",
+    "MEM.Percent": "메모리 사용률",
     "FPS": "FPS",
     "MOBO.Temp": "메인보드 온도",
     "CASE.Fan": "케이스 팬",
@@ -67,6 +68,7 @@
     "GPU.Power": "GPWR",
     "GPU.Fan": "GFAN",
     "MEM.Load": "MEM",
+    "MEM.Percent": "MEM%",
     "FPS": "FPS",
     "MOBO.Temp": "메인보드",
     "CASE.Fan": "케이스",
@@ -79,6 +81,11 @@
     "DATA.DayDown": "⏬"
   },
   "Menu": {
+    "PanelFont": "패널 글꼴",
+    "PanelFontBold": "글꼴 굵기",
+    "FollowTheme": "테마 따르기",
+    "BoldRegular": "보통",
+    "BoldBold": "굵게",
     "__Comment_Global__": "--- Global ---",
     "SettingsPanel": "설정 패널",
     "About": "정보",

@@ -218,5 +218,207 @@ namespace LiteMonitor.src.Core
                 }
             }
         }
+
+        // ============================================================
+        // 6. Windows 11 风格卡片（圆角 + 极淡描边 + 顶部高光线）
+        // ============================================================
+        public static GraphicsPath RoundRectF(RectangleF r, float radius)
+        {
+            var p = new GraphicsPath();
+            if (r.Width <= 0 || r.Height <= 0) return p;
+
+            if (radius <= 0)
+            {
+                p.AddRectangle(r);
+                return p;
+            }
+
+            float d = radius * 2f;
+            if (d > r.Width) d = r.Width;
+            if (d > r.Height) d = r.Height;
+
+            p.AddArc(r.X, r.Y, d, d, 180, 90);
+            p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+            p.CloseFigure();
+            return p;
+        }
+
+        /// <summary>
+        /// 只绘制 Fluent 描边：1px 极淡轮廓 + 顶部高光线（Windows 11 卡片的签名细节）。
+        /// 用半像素偏移让 1px 线条落在一个像素内，避免抗锯齿把细线糊成 2px。
+        /// </summary>
+        public static void DrawCardOutline(Graphics g, Rectangle r, int radius, Color stroke, Color highlight)
+        {
+            if (r.Width <= 0 || r.Height <= 0) return;
+
+            if (stroke.A > 0)
+            {
+                var inner = new RectangleF(r.X + 0.5f, r.Y + 0.5f, r.Width - 1f, r.Height - 1f);
+                using var path = RoundRectF(inner, radius);
+                g.DrawPath(GetPen(stroke, 1f), path);
+            }
+
+            if (highlight.A > 0 && r.Width > radius * 2 + 2)
+            {
+                int x1 = r.X + radius;
+                int x2 = r.Right - radius - 1;
+                if (x2 > x1)
+                    g.DrawLine(GetPen(highlight, 1f), x1, r.Y + 1f, x2, r.Y + 1f);
+            }
+        }
+
+        /// <summary>Windows 11 风格卡片：填充 + 描边 + 顶部高光线。</summary>
+        public static void DrawCard(Graphics g, Rectangle r, int radius, Color fill, Color stroke, Color highlight)
+        {
+            if (r.Width <= 0 || r.Height <= 0) return;
+
+            using (var brush = new SolidBrush(fill))
+            using (var path = RoundRect(r, radius))
+            {
+                g.FillPath(brush, path);
+            }
+
+            DrawCardOutline(g, r, radius, stroke, highlight);
+        }
+
+        // ============================================================
+        // 7. 4px 间距栅格
+        // ============================================================
+        /// <summary>把间距吸附到 4px 栅格（Windows 11 的布局节拍）。</summary>
+        public static int Grid4(int px) => (int)Math.Round(px / 4.0) * 4;
+        public static int Grid4(float px) => (int)Math.Round(px / 4.0) * 4;
+
+        // ============================================================
+        // 8. 等宽数字（模拟 OpenType 的 tnum 特性）
+        //     GDI/GDI+ 无法开启 OpenType 特性，这里用固定步进模拟，
+        //     保证数值刷新时宽度不跳动。
+        // ============================================================
+        private static readonly Dictionary<string, int> _digitAdvanceCache = new(StringComparer.Ordinal);
+        private static readonly Dictionary<string, int> _textWidthCache = new(StringComparer.Ordinal);
+        private static readonly object _measureLock = new object();
+
+        private static string FontKey(Font font)
+            => $"{font.Name}|{font.SizeInPoints:F2}|{(int)font.Style}";
+
+        private static int MeasureText(string s, Font font)
+        {
+            if (string.IsNullOrEmpty(s)) return 0;
+
+            string key = $"{FontKey(font)}|{s}";
+            lock (_measureLock)
+            {
+                if (_textWidthCache.TryGetValue(key, out int cached)) return cached;
+            }
+
+            int width = TextRenderer.MeasureText(s, font, new Size(int.MaxValue, int.MaxValue),
+                                                TextFormatFlags.NoPadding).Width;
+
+            // 纯空白等测量为 0 的兜底，避免单词粘连
+            if (width <= 0)
+                width = Math.Max(1, font.Height / 4);
+
+            lock (_measureLock)
+            {
+                if (_textWidthCache.Count > 512) _textWidthCache.Clear();
+                _textWidthCache[key] = width;
+            }
+            return width;
+        }
+
+        /// <summary>数字的最大字宽：所有数字按该宽度步进。</summary>
+        private static int DigitAdvance(Font font)
+        {
+            string key = FontKey(font);
+            lock (_measureLock)
+            {
+                if (_digitAdvanceCache.TryGetValue(key, out int cached)) return cached;
+            }
+
+            int max = 0;
+            for (char c = '0'; c <= '9'; c++)
+            {
+                int w = MeasureText(c.ToString(), font);
+                if (w > max) max = w;
+            }
+
+            lock (_measureLock) { _digitAdvanceCache[key] = max; }
+            return max;
+        }
+
+        private static bool IsDigit(char c) => c >= '0' && c <= '9';
+
+        private static void DrawRun(Graphics g, string s, Font font, int x, Rectangle rect, Color color, TextFormatFlags vertical)
+        {
+            if (string.IsNullOrEmpty(s)) return;
+
+            var target = new Rectangle(x, rect.Y, Math.Max(1, rect.Width - (x - rect.X)), rect.Height);
+            TextRenderer.DrawText(g, s, font, target, color,
+                TextFormatFlags.Left | vertical |
+                TextFormatFlags.NoPadding | TextFormatFlags.NoClipping);
+        }
+
+        /// <summary>右对齐的等宽数字绘制（数值列）。</summary>
+        public static void DrawTabularRight(Graphics g, string text, Font font, Rectangle rect, Color color)
+            => DrawTabular(g, text, font, rect, color, center: false, bottom: false);
+
+        /// <summary>居中的等宽数字绘制（双列项：读取/写入、上传/下载）。</summary>
+        public static void DrawTabularCentered(Graphics g, string text, Font font, Rectangle rect, Color color, bool bottomAlign = false)
+            => DrawTabular(g, text, font, rect, color, center: true, bottom: bottomAlign);
+
+        /// <summary>
+        /// 绘制文本，数字使用固定步进（等宽数字）。
+        /// GDI/GDI+ 无法开启 OpenType 的 tnum 特性，这里用固定步进模拟，
+        /// 保证数值刷新时宽度不跳动。非数字的连续片段整体绘制，保留正常字距与字形组合。
+        /// </summary>
+        private static void DrawTabular(Graphics g, string text, Font font, Rectangle rect, Color color, bool center, bool bottom)
+        {
+            if (string.IsNullOrEmpty(text) || rect.Width <= 0 || rect.Height <= 0) return;
+
+            var vertical = bottom ? TextFormatFlags.Bottom : TextFormatFlags.VerticalCenter;
+
+            int digitAdv = DigitAdvance(font);
+            if (digitAdv <= 0)
+            {
+                // 测量异常时退回普通绘制
+                TextRenderer.DrawText(g, text, font, rect, color,
+                    (center ? TextFormatFlags.HorizontalCenter : TextFormatFlags.Right) |
+                    vertical | TextFormatFlags.NoPadding);
+                return;
+            }
+
+            // 1. 计算总宽度
+            int total = 0;
+            for (int i = 0; i < text.Length;)
+            {
+                if (IsDigit(text[i])) { total += digitAdv; i++; continue; }
+
+                int j = i;
+                while (j < text.Length && !IsDigit(text[j])) j++;
+                total += MeasureText(text.Substring(i, j - i), font);
+                i = j;
+            }
+
+            // 2. 定位起点，逐段绘制
+            int x = center ? rect.X + (rect.Width - total) / 2 : rect.Right - total;
+            for (int i = 0; i < text.Length;)
+            {
+                if (IsDigit(text[i]))
+                {
+                    DrawRun(g, text[i].ToString(), font, x, rect, color, vertical);
+                    x += digitAdv;
+                    i++;
+                    continue;
+                }
+
+                int j = i;
+                while (j < text.Length && !IsDigit(text[j])) j++;
+                string run = text.Substring(i, j - i);
+                DrawRun(g, run, font, x, rect, color, vertical);
+                x += MeasureText(run, font);
+                i = j;
+            }
+        }
     }
 }

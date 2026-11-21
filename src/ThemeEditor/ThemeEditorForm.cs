@@ -584,7 +584,7 @@ namespace LiteMonitor.ThemeEditor
                         settings.Save();
 
                         // 应用新主题
-                        uiController.ApplyTheme(_currentThemeName);
+                        uiController.ApplyTheme(_currentThemeName, applyUserFonts: false);
 
                     }
                 }

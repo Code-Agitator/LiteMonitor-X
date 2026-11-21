@@ -4,22 +4,26 @@
   "layout": {
     "rowHeight": 40,
     "padding": 12,
-    "cornerRadius": 12,
-    "groupRadius": 10,
+    "cornerRadius": 8,
+    "groupRadius": 8,
     "groupPadding": 8,
-    "groupSpacing": 30,
+    "groupSpacing": 32,
     "groupBottom": 0,
-    "groupTitleOffset": 6,
-    "itemGap": 6
+    "groupTitleOffset": 8,
+    "itemGap": 8
   },
   "font": {
     "family": "Microsoft YaHei UI",
-    "valueFamily": "Consolas",
-    "title": 11.5,
-    "group": 10.5,
-    "item": 10.0,
-    "value": 14.0,
+    "valueFamily": "Segoe UI Variable Text",
+    "title": 10.5,
+    "group": 9.0,
+    "item": 10.5,
+    "value": 15.0,
     "bold": true,
+    "titleBold": true,
+    "groupBold": false,
+    "itemBold": false,
+    "valueBold": true,
     "scale": 1.0
   },
   "color": {
@@ -27,13 +31,16 @@
     "textTitle": "#FFFFFF",
     "textGroup": "#B0B0B0",
     "textPrimary": "#EAEAEA",
-    "valueSafe": "#66FF99",
-    "valueWarn": "#FFD666",
-    "valueCrit": "#FF6666",
+    "textSecondary": "#B0B0B0",
+    "valueSafe": "#6CCB5F",
+    "valueWarn": "#FCE100",
+    "valueCrit": "#FF99A4",
     "barBackground": "#1C1C1C",
-    "barLow": "#00C853",
-    "barMid": "#FFAB00",
-    "barHigh": "#D50000",
-    "groupBackground": "#2B2D31"
+    "barLow": "#6CCB5F",
+    "barMid": "#FCE100",
+    "barHigh": "#FF99A4",
+    "groupBackground": "#2B2D31",
+    "cardStroke": "#14FFFFFF",
+    "cardHighlight": "#26FFFFFF"
   }
 }

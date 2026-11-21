@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using LiteMonitor.src.Core;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using LiteMonitor.src.Core;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -41,11 +41,11 @@ namespace LiteMonitor
             float s = _t.Layout.LayoutScale; 
             if (s <= 0) s = 1.0f;
 
-            // 将写死的像素值进行缩放
-            int innerPad = (int)(10 * s);      // 原本是 10
-            int innerPadTotal = innerPad * 2;  // 原本是 20
-            int barMinH = (int)(4 * s);        // 原本是 6
-            int barBotGap = (int)(3 * s);      // 原本是 3
+            // 间距统一对齐 4px 栅格
+            int innerPad = UIUtils.Grid4(12 * s);
+            int innerPadTotal = innerPad * 2;
+            int barMinH = Math.Max(2, (int)(4 * s));
+            int barBotGap = UIUtils.Grid4(4 * s);
 
             // ★★★ [视觉补偿] x 减去 1px ★★★
             // 修复“左边距比右边宽”的视觉问题（平衡 GDI+ 文本左侧留白）

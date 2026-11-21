@@ -63,6 +63,13 @@ namespace LiteMonitor
         public string TaskbarFontFamily { get; set; } = DEFAULT_TB_FONT;
         public float TaskbarFontSize { get; set; } = DEFAULT_TB_SIZE_BOLD;
         public bool TaskbarFontBold { get; set; } = true;
+
+        // ====== 主面板字体（设置层对主题字体的覆盖）======
+        // 两项默认值均表示"跟随主题"，此时主面板字体完全由主题 JSON 决定，行为与旧版本一致。
+        /// <summary>主面板字体族；空字符串 = 跟随主题</summary>
+        public string PanelFontFamily { get; set; } = "";
+        /// <summary>主面板字重：-1 = 跟随主题, 0 = 常规, 1 = 加粗</summary>
+        public int PanelFontBold { get; set; } = -1;
         
         // 间距配置 (单位: px, 会自动随 DPI 缩放)
         public int TaskbarItemSpacing { get; set; } = DEFAULT_TB_GAP;      // 组与组之间的间距
@@ -241,7 +248,7 @@ namespace LiteMonitor
                 CachedPropShortLabelKey = UIUtils.Intern("PROP.ShortLabel." + _key);
                 CachedItemsKey = UIUtils.Intern("Items." + _key);
 
-                if (_key == "MEM.Load" || _key == "MOBO.Temp" || _key == "DISK.Temp" || _key == "CASE.Fan"|| _key == "FPS") 
+                if (_key == "MEM.Load" || _key == "MEM.Percent" || _key == "MOBO.Temp" || _key == "DISK.Temp" || _key == "CASE.Fan"|| _key == "FPS") 
                     CachedUIGroup = "HOST"; 
                 else if (_key.StartsWith("DASH."))
                 {
@@ -303,6 +310,7 @@ namespace LiteMonitor
 
                 // Fallback for uninitialized state (should be rare)
                 if (Key == "MEM.Load" || 
+                    Key == "MEM.Percent" ||
                     Key == "MOBO.Temp" || 
                     Key == "DISK.Temp" || 
                     Key == "CASE.Fan"|| 

@@ -78,6 +78,9 @@ namespace LiteMonitor.src.Core
                 if (key.IndexOf("Power", StringComparison.OrdinalIgnoreCase) >= 0) return MetricType.Power;
                 return MetricType.Percent;
             }
+            // 内存百分比：始终按百分比渲染，不受「内存显示模式」(容量模式) 影响
+            if (key.Equals("MEM.Percent", StringComparison.OrdinalIgnoreCase)) return MetricType.Percent;
+
             if (key.IndexOf("MEM", StringComparison.OrdinalIgnoreCase) >= 0 || 
                 key.IndexOf("VRAM", StringComparison.OrdinalIgnoreCase) >= 0) return MetricType.Memory;
 

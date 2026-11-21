@@ -28,15 +28,18 @@ namespace LiteMonitor.src.Core
         public int RowHeight { get; set; } = 40;
         public int Padding { get; set; } = 12;
 
-        public int CornerRadius { get; set; } = 12;
-        public int GroupRadius { get; set; } = 10;
+        // Windows 11 圆角规格：卡片/浮出层 8px，控件 4px
+        public int CornerRadius { get; set; } = 8;
+        public int GroupRadius { get; set; } = 8;
+        public int ControlRadius { get; set; } = 4;
 
+        // 间距统一对齐 4px 栅格（Windows 11 布局节拍）
         public int GroupPadding { get; set; } = 8;
-        public int GroupSpacing { get; set; } = 30;
+        public int GroupSpacing { get; set; } = 32;
         public int GroupBottom { get; set; } = 0;
 
-        public int ItemGap { get; set; } = 6;
-        public int GroupTitleOffset { get; set; } = 6;
+        public int ItemGap { get; set; } = 8;
+        public int GroupTitleOffset { get; set; } = 8;
 
         
 
@@ -50,6 +53,7 @@ namespace LiteMonitor.src.Core
             Padding = (int)(Padding * s);
             CornerRadius = (int)(CornerRadius * s);
             GroupRadius = (int)(GroupRadius * s);
+            ControlRadius = (int)(ControlRadius * s);
             GroupPadding = (int)(GroupPadding * s);
             GroupSpacing = (int)(GroupSpacing * s);
             GroupBottom = (int)(GroupBottom * s);
@@ -71,14 +75,24 @@ namespace LiteMonitor.src.Core
     public class FontConfig
     {
         public string Family { get; set; } = "Microsoft YaHei UI";
-        public string ValueFamily { get; set; } = "Consolas";
+        // Windows 11 的数字/拉丁字形；系统缺失时由 ThemeManager.ResolveFamily 逐级回退
+        public string ValueFamily { get; set; } = "Segoe UI Variable Text";
 
-        public double Title { get; set; } = 11.5;
-        public double Group { get; set; } = 10.5;
-        public double Item { get; set; } = 10.0;
-        public double Value { get; set; } = 10.5;
+        // 字号对齐 WinUI 3 类型阶梯：Caption 12px / Body 14px / Subtitle 20px
+        public double Title { get; set; } = 10.5;   // Body Strong 14px
+        public double Group { get; set; } = 9.0;    // Caption 12px
+        public double Item { get; set; } = 10.5;    // Body 14px
+        public double Value { get; set; } = 15.0;   // Subtitle 20px
 
+        /// <summary>兼容旧主题的全局字重；未显式指定的层级回退到该值。</summary>
         public bool Bold { get; set; } = true;
+
+        // 分层字重（Win11 层级：标题与数值较强，正文与说明常规）
+        public bool? TitleBold { get; set; }
+        public bool? GroupBold { get; set; }
+        public bool? ItemBold { get; set; }
+        public bool? ValueBold { get; set; }
+
         public int ItemSize { get; internal set; }
     }
 
@@ -118,16 +132,23 @@ namespace LiteMonitor.src.Core
         public string TextGroup { get; set; } = "#B0B0B0";
         public string TextPrimary { get; set; } = "#EAEAEA";
 
-        public string ValueSafe { get; set; } = "#66FF99";
-        public string ValueWarn { get; set; } = "#FFD666";
-        public string ValueCrit { get; set; } = "#FF6666";
+        public string TextSecondary { get; set; } = "#B0B0B0";
+
+        // 语义色 —— WinUI 3 SystemFillColor*（深色）
+        public string ValueSafe { get; set; } = "#6CCB5F";
+        public string ValueWarn { get; set; } = "#FCE100";
+        public string ValueCrit { get; set; } = "#FF99A4";
 
         public string BarBackground { get; set; } = "#1C1C1C";
-        public string BarLow { get; set; } = "#00C853";
-        public string BarMid { get; set; } = "#FFAB00";
-        public string BarHigh { get; set; } = "#D50000";
+        public string BarLow { get; set; } = "#6CCB5F";
+        public string BarMid { get; set; } = "#FCE100";
+        public string BarHigh { get; set; } = "#FF99A4";
 
         public string GroupBackground { get; set; } = "#2B2D31";
+
+        // Windows 11 描边：极淡 1px 轮廓 + 顶部高光线（Fluent 卡片签名细节）
+        public string CardStroke { get; set; } = "#14FFFFFF";
+        public string CardHighlight { get; set; } = "#26FFFFFF";
     }
 
     /// <summary>
@@ -160,36 +181,40 @@ namespace LiteMonitor.src.Core
         {
             try
             {
-                var style = Font.Bold ? FontStyle.Bold : FontStyle.Regular;
-                FontTitle = new Font(Font.Family, (float)Font.Title, style);
-                FontGroup = new Font(Font.Family, (float)Font.Group, style);
-                FontItem = new Font(Font.Family, (float)Font.Item, style);
-                
-                var valueFamily = string.IsNullOrWhiteSpace(Font.ValueFamily) ? Font.Family : Font.ValueFamily;
-                FontValue = new Font(valueFamily, (float)Font.Value, style);
+                var family = ThemeManager.ResolveFamily(Font.Family, "Microsoft YaHei UI", "Segoe UI");
+                var valueFamily = ThemeManager.ResolveFamily(Font.ValueFamily, family, "Segoe UI", "Consolas");
+
+                FontTitle = new Font(family, (float)Font.Title, StyleOf(Font.TitleBold));
+                FontGroup = new Font(family, (float)Font.Group, StyleOf(Font.GroupBold));
+                FontItem = new Font(family, (float)Font.Item, StyleOf(Font.ItemBold));
+                FontValue = new Font(valueFamily, (float)Font.Value, StyleOf(Font.ValueBold));
             }
             catch
             {
                 FontTitle = FontGroup = FontItem = FontValue = SystemFonts.CaptionFont;
             }
         }
+
+        /// <summary>分层字重：未显式指定的层级回退到全局 Bold（兼容旧主题）。</summary>
+        private FontStyle StyleOf(bool? levelBold)
+            => (levelBold ?? Font.Bold) ? FontStyle.Bold : FontStyle.Regular;
         public void Scale(float dpiScale, float userScale)
         {
             Layout.LayoutScale = dpiScale * userScale;
             Layout.Scale(Layout.LayoutScale);
 
-            var style = Font.Bold ? FontStyle.Bold : FontStyle.Regular;
-            var valueFamily = string.IsNullOrWhiteSpace(Font.ValueFamily) ? Font.Family : Font.ValueFamily;
+            var family = ThemeManager.ResolveFamily(Font.Family, "Microsoft YaHei UI", "Segoe UI");
+            var valueFamily = ThemeManager.ResolveFamily(Font.ValueFamily, family, "Segoe UI", "Consolas");
             float f = userScale <= 0 ? 1.0f : userScale;
 
             // ★★★ 关键：先销毁旧的缩放字体，防止句柄泄露 ★★★
             DisposeFonts(); 
 
             // 创建新比例的字体
-            FontTitle = new Font(Font.Family, (float)Font.Title * f, style);
-            FontGroup = new Font(Font.Family, (float)Font.Group * f, style);
-            FontItem = new Font(Font.Family, (float)Font.Item * f, style);
-            FontValue = new Font(valueFamily, (float)Font.Value * f, style);
+            FontTitle = new Font(family, (float)Font.Title * f, StyleOf(Font.TitleBold));
+            FontGroup = new Font(family, (float)Font.Group * f, StyleOf(Font.GroupBold));
+            FontItem = new Font(family, (float)Font.Item * f, StyleOf(Font.ItemBold));
+            FontValue = new Font(valueFamily, (float)Font.Value * f, StyleOf(Font.ValueBold));
         }
         public void DisposeFonts()
         {
@@ -210,6 +235,79 @@ namespace LiteMonitor.src.Core
     public static class ThemeManager
     {
         public static Theme Current { get; private set; } = new Theme();
+
+        // ===== 字体族解析：优先 Win11 字体，缺失时逐级回退 =====
+        private static readonly Dictionary<string, string> _familyCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly object _familyLock = new object();
+        private static HashSet<string>? _installedFamilies;
+        private static string[]? _sortedFamilies;
+
+        private static HashSet<string> InstalledFamilies
+        {
+            get
+            {
+                if (_installedFamilies != null) return _installedFamilies;
+
+                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                try
+                {
+                    foreach (var f in FontFamily.Families)
+                    {
+                        try { set.Add(f.Name); } catch { }
+                    }
+                }
+                catch { }
+
+                _installedFamilies = set;
+                return set;
+            }
+        }
+
+        /// <summary>系统已安装字体族（按名称排序，首次调用后缓存），供设置界面下拉使用。</summary>
+        public static IReadOnlyList<string> GetInstalledFamilies()
+        {
+            if (_sortedFamilies != null) return _sortedFamilies;
+
+            _sortedFamilies = InstalledFamilies
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return _sortedFamilies;
+        }
+
+        /// <summary>
+        /// 按候选顺序返回第一个系统已安装的字体族。
+        /// 目的：避免首选字体缺失（如 Win10 没有 Segoe UI Variable）时整套字体回退成默认字体。
+        /// </summary>
+        public static string ResolveFamily(string? preferred, params string?[] fallbacks)
+        {
+            string key = preferred ?? string.Empty;
+            lock (_familyLock)
+            {
+                if (_familyCache.TryGetValue(key, out var cached)) return cached;
+            }
+
+            var installed = InstalledFamilies;
+            string? result = null;
+
+            void TryCandidate(string? name)
+            {
+                if (result != null) return;
+                if (string.IsNullOrWhiteSpace(name)) return;
+                if (installed.Contains(name!)) result = name;
+            }
+
+            TryCandidate(preferred);
+            foreach (var fb in fallbacks) TryCandidate(fb);
+            TryCandidate("Microsoft YaHei UI");
+            TryCandidate("Segoe UI");
+
+            result ??= SystemFonts.DefaultFont.FontFamily.Name;
+
+            lock (_familyLock) { _familyCache[key] = result; }
+            return result;
+        }
         
         // ★★★ 修改：移除 _stringPool，只保留 _colorCache ★★★
         // private static readonly Dictionary<string, string> _stringPool ... (删除)

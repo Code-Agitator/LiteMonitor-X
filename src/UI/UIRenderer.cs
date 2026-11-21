@@ -76,8 +76,11 @@ namespace LiteMonitor
         {
             int gp = t.Layout.GroupPadding;
             
-            // 绘制圆角背景
-            UIUtils.FillRoundRect(g, gr.Bounds, t.Layout.GroupRadius, ThemeManager.ParseColor(t.Color.GroupBackground));
+            // 绘制 Win11 风格卡片：8px 圆角 + 1px 极淡描边 + 顶部高光线
+            UIUtils.DrawCard(g, gr.Bounds, t.Layout.GroupRadius,
+                ThemeManager.ParseColor(t.Color.GroupBackground),
+                ThemeManager.ParseColor(t.Color.CardStroke),
+                ThemeManager.ParseColor(t.Color.CardHighlight));
 
             // 绘制组标题 (CPU, GPU...)
             // ★★★ 优化：直接使用缓存的 gr.Label，不再每帧调用 LanguageManager.T ★★★
@@ -123,9 +126,8 @@ namespace LiteMonitor
             
             Color valColor = it.GetTextColor(t);
 
-            TextRenderer.DrawText(g, valText, t.FontValue, it.ValueRect,
-                valColor,
-                TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            // 等宽数字：避免数值刷新时左右跳动
+            UIUtils.DrawTabularRight(g, valText, t.FontValue, it.ValueRect, valColor);
 
             // Bar - 注意：这里调用的是 UIUtils.DrawBar，它现在已经使用了优化的画刷逻辑
             UIUtils.DrawBar(g, it, t);
@@ -144,7 +146,6 @@ namespace LiteMonitor
             TextRenderer.DrawText(g, label, t.FontItem, it.LabelRect,
                 ThemeManager.ParseColor(t.Color.TextPrimary),
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.Top | TextFormatFlags.NoPadding);
-
             // Value (居中底部)
             // ★★★ [优化]：如果用户使用了自定义单位 (HasCustomUnit)，则跳过窄屏自动精简逻辑 ★★★
             // 原逻辑：if (narrow) valText = FormatHorizontalValue(...)
@@ -155,9 +156,8 @@ namespace LiteMonitor
 
             Color valColor = it.GetTextColor(t);
 
-            TextRenderer.DrawText(g, valText, t.FontValue, it.ValueRect,
-                valColor,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.Bottom | TextFormatFlags.NoPadding);
+            // 居中 + 等宽数字（保持与右对齐数值一致的防抖动效果）
+            UIUtils.DrawTabularCentered(g, valText, t.FontValue, it.ValueRect, valColor, bottomAlign: true);
         }
 
         // [新增] 绘制纯文本项方法
@@ -179,9 +179,7 @@ namespace LiteMonitor
             // ★★★ 修改：字体使用 FontItem (与标签一致)，颜色保持 ValueSafe ★★★
             // [Fix] Use GetTextColor(t) to respect Plugin Color Override
             Color valColor = it.GetTextColor(t);
-            TextRenderer.DrawText(g, text, t.FontItem, it.ValueRect,
-                valColor, 
-                TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            UIUtils.DrawTabularRight(g, text, t.FontItem, it.ValueRect, valColor);
 
             // ★★★ 修复：补充分割线 (最后一行不画) ★★★
             if (!isLast)

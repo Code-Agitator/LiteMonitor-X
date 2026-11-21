@@ -110,8 +110,54 @@ namespace LiteMonitor.src.UI.SettingsPage
                 () => (Config.UIScale * 100) + "%",
                 s => Config.UIScale = MetricUtils.ParseDouble(s) / 100.0);
 
+            // 6. 主面板字体（设置层覆盖主题字体）
+            string[] fontOptions = BuildPanelFontOptions();
+            group.AddComboIndex(this, "Menu.PanelFont", fontOptions,
+                () => FindPanelFontIndex(fontOptions, Config.PanelFontFamily),
+                idx => Config.PanelFontFamily = (idx <= 0 || idx >= fontOptions.Length) ? "" : fontOptions[idx]);
+
+            string[] weights =
+            {
+                LanguageManager.T("Menu.FollowTheme"),
+                LanguageManager.T("Menu.BoldRegular"),
+                LanguageManager.T("Menu.BoldBold")
+            };
+            group.AddComboIndex(this, "Menu.PanelFontBold", weights,
+                () => Math.Clamp(Config.PanelFontBold, -1, 1) + 1,
+                idx => Config.PanelFontBold = idx - 1);
+
             AddGroupToPage(group);
 
+        }
+
+        /// <summary>
+        /// 字体下拉选项：第 0 项固定为"跟随主题"，其后是系统已安装字体。
+        /// 若当前设置指向的字体已卸载，则补进列表，避免选择被静默重置为"跟随主题"。
+        /// </summary>
+        private string[] BuildPanelFontOptions()
+        {
+            var list = new List<string> { LanguageManager.T("Menu.FollowTheme") };
+
+            try { list.AddRange(ThemeManager.GetInstalledFamilies()); } catch { }
+
+            string current = Config?.PanelFontFamily ?? "";
+            if (!string.IsNullOrWhiteSpace(current) &&
+                !list.Any(x => string.Equals(x, current, StringComparison.OrdinalIgnoreCase)))
+            {
+                list.Insert(1, current);
+            }
+
+            return list.ToArray();
+        }
+
+        private static int FindPanelFontIndex(string[] options, string? family)
+        {
+            if (string.IsNullOrWhiteSpace(family)) return 0;
+
+            int idx = Array.FindIndex(options,
+                x => string.Equals(x, family, StringComparison.OrdinalIgnoreCase));
+
+            return idx < 0 ? 0 : idx;
         }
 
         private void CreateHorizontalModeGroup()

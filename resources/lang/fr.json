@@ -34,6 +34,7 @@
     "GPU.Power": "Watts GPU",
     "GPU.Fan": "Vent GPU",
     "MEM.Load": "Usage RAM",
+    "MEM.Percent": "Usage RAM %",
     "FPS": "FPS",
     "MOBO.Temp": "Temp MOBO",
     "CASE.Fan": "Vent Case",
@@ -68,6 +69,7 @@
     "GPU.Power": "GPWR",
     "GPU.Fan": "GFAN",
     "MEM.Load": "RAM",
+    "MEM.Percent": "RAM%",
     "FPS": "FPS",
     "MOBO.Temp": "MOBO",
     "CASE.Fan": "Case",
@@ -80,6 +82,11 @@
     "DATA.DayDown": "⏬"
   },
   "Menu": {
+    "PanelFont": "Police du panneau",
+    "PanelFontBold": "Graisse de police",
+    "FollowTheme": "Selon le thème",
+    "BoldRegular": "Normal",
+    "BoldBold": "Gras",
     "__Comment_Global__": "--- Global ---",
     "SettingsPanel": "Options",
     "About": "À propos",
